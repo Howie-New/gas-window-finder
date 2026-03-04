@@ -99,17 +99,34 @@ COINGECKO_API_KEY=
 ## 里程碑
 
 ### v0.1
-- [ ] EVM/BTC/SOL 实时报价 CLI
-- [ ] USDT 成本换算
-- [ ] 多链费用排名
+- [x] EVM/BTC/SOL 实时报价 CLI（`quote`）
+- [x] USDT 成本换算
+- [x] 多链费用排名
 
 ### v0.2
-- [ ] 过去24小时低费窗口计算
-- [ ] 单日/周平均统计（Dune）
+- [x] 过去24小时低费窗口计算（`collect` + `windows24`）
+- [x] 单日/周平均统计（Dune，`stats`）
 
 ### v0.3
 - [ ] Telegram/机器人输出模板
 - [ ] Cron 定时任务与告警
+
+## CLI 快速使用
+
+```bash
+# 1) 实时报价（默认含 EVM + BTC + SOL）
+uv run gas-window-finder quote
+
+# 2) 采样一轮 EVM gas 到本地快照
+uv run gas-window-finder collect --data-dir data
+
+# 3) 从本地快照计算过去24小时低费窗口（CST）
+uv run gas-window-finder windows24 --csv data/gas_snapshots.csv
+
+# 4) Dune 日均/周均统计（需 DUNE_API_KEY）
+set -a; source ~/.secrets/dune.env; set +a
+uv run gas-window-finder stats
+```
 
 ## License
 
