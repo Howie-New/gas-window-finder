@@ -1,0 +1,125 @@
+Metadata-Version: 2.4
+Name: gas-window-finder
+Version: 0.1.0
+Summary: Multi-chain gas fee quotes and low-fee window finder
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Dynamic: license-file
+
+# gas-window-finder
+
+多链 Gas Fee 观测与低费时段发现工具（面向 DeFi / NFT / Meme / 链游交互前决策）。
+
+## 目标
+
+给出“什么时候、在哪条链交互最省钱”的可执行答案：
+
+- 实时 gas 报价（多链）
+- 过去 24 小时低 gas fee 时段（按小时窗口）
+- 单日平均 gas fee / 周平均 gas fee
+- 统一换算 USDT 成本，并输出从高到低/从低到高排名
+
+## 首版支持链（MVP）
+
+- EVM: Ethereum, BSC, Arbitrum, Optimism, Base, Linea
+- Bitcoin
+- Solana
+- （可扩展）Tron
+
+## 数据源设计
+
+### 1) 实时报价
+- EVM: 公共 RPC `eth_gasPrice`
+- Bitcoin: mempool 推荐费率（sat/vB）
+- Solana: `getRecentPrioritizationFees`
+- Tron: 带宽/能量模型（后续补充精确估算）
+
+### 2) 历史统计（日/周）
+- Dune 官方口径：`metrics.gas_fees_daily`
+- 用于产出单日平均、周平均和跨链对比
+
+### 3) 小时级低费窗口
+- ETH 可先参考 Dune 看板（如 `kroeger0x/gas-prices`）
+- 后续沉淀为项目内可重复计算 SQL / 本地快照
+
+## 输出示例（目标格式）
+
+```text
+[2026-03-05 10:00 CST]
+
+实时转账成本（估算，USDT）
+1) Linea      0.0018
+2) Arbitrum   0.0009
+3) BSC        0.0007
+4) Base       0.0006
+5) Optimism   0.0000
+
+过去24小时低费窗口（CST）
+- Ethereum: P1 03:00-05:00, P2 14:00-16:00
+- Arbitrum: P1 11:00-12:00, P2 22:00-23:00
+
+统计
+- Ethereum: 日均 xx / 周均 xx
+- Solana:   日均 xx / 周均 xx
+- Bitcoin:  日均 xx / 周均 xx
+```
+
+## 项目结构（建议）
+
+```text
+gas-window-finder/
+├─ README.md
+├─ pyproject.toml
+├─ src/
+│  └─ gas_window_finder/
+│     ├─ collectors/
+│     │  ├─ evm.py
+│     │  ├─ bitcoin.py
+│     │  ├─ solana.py
+│     │  └─ tron.py
+│     ├─ adapters/
+│     │  └─ dune.py
+│     ├─ pricing/
+│     │  └─ fx.py
+│     ├─ analytics/
+│     │  ├─ windows_24h.py
+│     │  └─ daily_weekly.py
+│     ├─ cli.py
+│     └─ models.py
+└─ tests/
+```
+
+## 开发规范
+
+- Python workflow: 使用 `uv`
+- secrets: 放在 `~/.secrets/*.env`，不要进仓库
+- 默认时区：`Asia/Shanghai`（输出给用户统一 CST）
+
+## 环境变量（草案）
+
+```bash
+DUNE_API_KEY=
+COINGECKO_API_KEY=
+```
+
+> 注：首版可在无 key 情况下先跑实时 RPC + mempool；Dune 统计建议接 API key。
+
+## 里程碑
+
+### v0.1
+- [ ] EVM/BTC/SOL 实时报价 CLI
+- [ ] USDT 成本换算
+- [ ] 多链费用排名
+
+### v0.2
+- [ ] 过去24小时低费窗口计算
+- [ ] 单日/周平均统计（Dune）
+
+### v0.3
+- [ ] Telegram/机器人输出模板
+- [ ] Cron 定时任务与告警
+
+## License
+
+MIT

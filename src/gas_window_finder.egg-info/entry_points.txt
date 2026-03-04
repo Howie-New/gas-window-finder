@@ -1,0 +1,2 @@
+[console_scripts]
+gas-window-finder = gas_window_finder.cli:main
